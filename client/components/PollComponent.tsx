@@ -3,18 +3,25 @@ import React, { useState } from 'react'
 import { useSocket } from '../context/SocketContext';
 import { RadioButton } from 'react-native-paper';
 import { AntDesign } from '@expo/vector-icons';
-
+import { object, string, number, date, InferType, array } from 'yup';
 
 const PollComponent = () => {
     const socket = useSocket();
-    const [data, setData] = useState("");
-    const [text,setText] = useState("");
+    const [room, setRoom] = useState("");
     const [question,setQuestion] = useState("");
-    const [optionsCount,setOptionsCount] = useState(1);
     const [options, setOptions] = useState<string[]| undefined>([]);
 
+    let pollSchema = object({
+        room:number().integer("Room must be a number").min(100,"Room should be in range 100-999").max(999, 'Room must be a 3-digit number'),
+        question:string().min(16,"Question is too small !!").max(80,"Question is too big !!").required(),
+        options:array(string().required("Option is required").min(2, 'Option is too small').max(40,"Option is too big")).required("Options are necessary").min(2,"There should be alteast 2 options"),
+    })
+
+
+
+
     const clearEverything = ()=>{
-        setData("");
+        setRoom("");
         setQuestion("");
         setOptions([]);
     }
@@ -41,14 +48,25 @@ const PollComponent = () => {
       });
     };
 
-    const submitHandler = ()=>{
-
+    const submitHandler =async ()=>{
+        try {
+            const roomNumber = parseInt(room, 10);
+            if (isNaN(roomNumber) || roomNumber < 100 || roomNumber > 999) {
+                Alert.alert("Room validation","Room must be a number between 100 and 999");
+              }
+            else{
+                const poll = await pollSchema.validate({question,options,room}) 
+            } 
+        } catch (error) {
+            Alert.alert("Erro in validation",error.message)
+            console.log("Error in validation ,", error)
+        }
     }
 
 
     return (
         <ScrollView style={styles.scrollView}>
-            <TextInput style={styles.input} placeholder='Enter Room no .' onChangeText={(text) => setData(text)} />
+            <TextInput style={styles.input} placeholder='Enter Room no .' onChangeText={(text) => setRoom(text)} />
             
             <View style={styles.pollCard}>
                 <TextInput style={styles.quesInput} placeholder='Enter question ...' onChangeText={(text)=>setQuestion(text)}/>
