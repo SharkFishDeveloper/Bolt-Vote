@@ -3,6 +3,7 @@ import React, { memo, useState } from 'react'
 import { questions } from '../util/HomeScreen-Content';
 import { MaterialIcons } from '@expo/vector-icons';
 
+
 const faqs = questions;
 const Faq = () => {
 

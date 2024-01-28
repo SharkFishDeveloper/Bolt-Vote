@@ -10,8 +10,10 @@ const PollComponent = () => {
     const [room, setRoom] = useState("");
     const [question,setQuestion] = useState("");
     const [options, setOptions] = useState<string[]| undefined>([]);
+    const [name,setName] = useState("");
 
     let pollSchema = object({
+        name:string().required("Name is required").min(4,"Name is too small").max(10,"Name is too big"),
         room:number().integer("Room must be a number").min(100,"Room should be in range 100-999").max(999, 'Room must be a 3-digit number'),
         question:string().min(16,"Question is too small !!").max(80,"Question is too big !!").required(),
         options:array(string().required("Option is required").min(2, 'Option is too small').max(40,"Option is too big")).required("Options are necessary").min(2,"There should be alteast 2 options"),
@@ -47,7 +49,8 @@ const PollComponent = () => {
         return newOptions;
       });
     };
-
+    console.log("Render");
+    
     const submitHandler =async ()=>{
         try {
             const roomNumber = parseInt(room, 10);
@@ -55,10 +58,10 @@ const PollComponent = () => {
                 Alert.alert("Room validation","Room must be a number between 100 and 999");
               }
             else{
-                const poll = await pollSchema.validate({question,options,room}) 
+                const poll = await pollSchema.validate({question,options,room,name}) 
             } 
         } catch (error) {
-            Alert.alert("Erro in validation",error.message)
+            Alert.alert("Polling validation error",error.message)
             console.log("Error in validation ,", error)
         }
     }
@@ -66,6 +69,7 @@ const PollComponent = () => {
 
     return (
         <ScrollView style={styles.scrollView}>
+            <TextInput style={styles.input} placeholder='Enter your name' onChangeText={(text) => setName(text)} />
             <TextInput style={styles.input} placeholder='Enter Room no .' onChangeText={(text) => setRoom(text)} />
             
             <View style={styles.pollCard}>
