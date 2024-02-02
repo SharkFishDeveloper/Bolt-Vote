@@ -3,12 +3,12 @@ import React, { useState } from 'react'
 import PollComponent from '../components/PollComponent'
 
 
-const CreateRoom = () => {
+const CreateRoom = ({navigation}) => {
 
      return (
     <View style={styles.view}>
       <Text style={styles.header}>Create room</Text>
-      <PollComponent/>
+      <PollComponent navigation={navigation}/>
     </View>
   )
 }

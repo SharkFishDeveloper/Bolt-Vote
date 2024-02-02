@@ -12,7 +12,7 @@ export const SocketProvider:React.FC<{children:React.ReactNode}> = ({ children }
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io('http://192.168.1.4:3000');
+    const newSocket = io('http://192.168.7.184:3000');
 
     // You can add event listeners here using newSocket.on
 

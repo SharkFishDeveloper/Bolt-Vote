@@ -1,12 +1,13 @@
 import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSocket } from '../context/SocketContext';
 import { RadioButton } from 'react-native-paper';
 import { AntDesign } from '@expo/vector-icons';
-import { object, string, number, date, InferType, array } from 'yup';
+import { object, string, number,array, date } from 'yup';
 
-const PollComponent = () => {
+const PollComponent = ({navigation}) => {
     const socket = useSocket();
+
     const [room, setRoom] = useState("");
     const [question,setQuestion] = useState("");
     const [options, setOptions] = useState<string[]| undefined>([]);
@@ -19,8 +20,18 @@ const PollComponent = () => {
         options:array(string().required("Option is required").min(2, 'Option is too small').max(40,"Option is too big")).required("Options are necessary").min(2,"There should be alteast 2 options"),
     })
 
-
-
+    useEffect(()=>{
+        socket.on("roomCreated",(data)=>{
+            console.log("Room creation data",data);
+            if(data){
+                Alert.alert("Message",`Room created room ${room}` );
+                navigation.navigate("Join-room");
+            }
+            else{
+                Alert.alert("Message",`Unable to create room ${room}` );
+            }
+        });
+    },[])
 
     const clearEverything = ()=>{
         setRoom("");
@@ -49,7 +60,7 @@ const PollComponent = () => {
         return newOptions;
       });
     };
-    console.log("Render");
+    // console.log("Render");
     
     const submitHandler =async ()=>{
         try {
@@ -58,8 +69,10 @@ const PollComponent = () => {
                 Alert.alert("Room validation","Room must be a number between 100 and 999");
               }
             else{
-                const poll = await pollSchema.validate({question,options,room,name}) 
-            } 
+                const poll = await pollSchema.validate({question,options,room,name}) ;
+
+                const ans = socket.emit("Createroom",{roomId:parseInt(room,10),question,options,postedBy:name}); 
+            }
         } catch (error) {
             Alert.alert("Polling validation error",error.message)
             console.log("Error in validation ,", error)
@@ -67,9 +80,11 @@ const PollComponent = () => {
     }
 
 
+
+
     return (
         <ScrollView style={styles.scrollView}>
-            <TextInput style={styles.input} placeholder='Enter your name' onChangeText={(text) => setName(text)} />
+            <TextInput style={styles.input} placeholder='Enter your name' onChangeText={(text) => setName(text)} multiline/>
             <TextInput style={styles.input} placeholder='Enter Room no .' onChangeText={(text) => setRoom(text)} />
             
             <View style={styles.pollCard}>
@@ -103,7 +118,7 @@ const PollComponent = () => {
                </TouchableOpacity>
                
             <TouchableOpacity onPress={submitHandler} style={styles.postButton}>
-               <Text style={styles.post}>Post</Text>
+               <Text style={styles.post}>Create room</Text>
             </TouchableOpacity>
         </ScrollView>
     )
@@ -199,7 +214,7 @@ const styles = StyleSheet.create({
         borderRadius:12,
         // position:'absolute',
         // bottom:-10
-        marginTop:100,
+        marginTop:50,
         justifyContent:'center',
         alignItems:'center'
     }
